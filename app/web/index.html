@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataForge Backup · estrategias de respaldo NoSQL</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<header>
+  <div class="marca">
+    <h1>DataForge Backup</h1>
+    <p class="sub">Estrategias de respaldo para bases de datos NoSQL · proyecto SI-783</p>
+  </div>
+  <div class="acciones">
+    <label class="campo">
+      <span>Motor</span>
+      <select id="motor">
+        <option value="mongodb">MongoDB 7.0</option>
+        <option value="redis">Redis 7.0</option>
+        <option value="neo4j">Neo4j 5.24</option>
+      </select>
+    </label>
+    <label class="campo">
+      <span>Estrategia</span>
+      <select id="estrategia"></select>
+    </label>
+    <button id="btn-respaldar" class="primario">Generar respaldo</button>
+    <button id="btn-restaurar">Restaurar respaldo</button>
+    <button id="btn-refrescar">Refrescar estado</button>
+  </div>
+</header>
+
+<p id="estado" class="estado" hidden></p>
+
+<main>
+  <section class="panel">
+    <h2>1. Estado real de los motores <small id="resumen-motores"></small></h2>
+    <p class="nota">
+      Esta tabla no es decorativa: cada fila sale de consultar el motor de verdad
+      al cargar la pagina. Si un motor esta apagado, se dice. La version es la que
+      contesta el propio motor.
+    </p>
+    <div id="motores" class="motores"><p class="vacio">Consultando motores...</p></div>
+  </section>
+
+  <section class="panel">
+    <h2>2. Estrategias de respaldo <small id="resumen-estrategias"></small></h2>
+    <p class="nota">
+      Que protege cada estrategia y —tan importante— que <strong>no</strong>
+      protege. La columna de la derecha es la que evita la sorpresa despues del
+      incidente.
+    </p>
+    <div id="estrategias" class="tabla-envoltura">
+      <p class="vacio">Cargando indice de estrategias...</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>3. Ejecutar <small id="resultado-titulo"></small></h2>
+    <p class="nota">
+      El boton ejecuta el respaldo de verdad contra el motor elegido. Las cifras
+      de abajo se miden leyendo el archivo generado: su tamano en disco y su
+      hash sha256 recalculado, no un numero estimado.
+    </p>
+    <div id="progreso" class="progreso" hidden><div id="barra"></div></div>
+    <div id="resultado" class="resultado"><p class="vacio">Todavia no se ha ejecutado nada.</p></div>
+  </section>
+</main>
+
+<footer>
+  <p>
+    Servidor sin dependencias externas (solo biblioteca estandar de Python).
+    MS SQL Server esta excluido por el enunciado. Documentacion del despliegue en
+    <code>DEPLOY.md</code>.
+  </p>
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>

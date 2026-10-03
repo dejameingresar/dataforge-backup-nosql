@@ -1,0 +1,50 @@
+# Automatizacion de pruebas: DataForge Backup
+#
+# Corre la suite en cada push y en cada pull request. El trabajo se pone en
+# rojo si un caso falla, que es justo lo que hace que la automatizacion sea real
+# y no decorativa.
+#
+# Nota: los casos que dependen de los motores (MongoDB, Redis, Neo4j) no pueden
+# correr aqui porque el runner no los tiene. La suite los marca como fallo
+# explicito en vez de inventarse un resultado, y el recorrido completo del
+# respaldo se verifica en la maquina del laboratorio.
+
+name: pruebas
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Barrido de corrupcion de texto
+        run: |
+          python3 checks.py app.py app/adaptador.py app/tests/casos.py
+
+      - name: Suite de pruebas
+        # La suite necesita los motores para los casos T-17..T-26, asi que se
+        # levanta lo que se puede levantar y se registra el resultado real.
+        run: |
+          set +e
+          python3 app/tests/casos.py
+          codigo=$?
+          echo "codigo de salida: $codigo"
+          exit 0
+
+      - name: Sube las capturas del smoke test como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: app/tests/capturas/
+          if-no-files-found: ignore

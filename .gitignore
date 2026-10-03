@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+*.sqlite
+*.sqlite3
+*.db
+*.pdf.html
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Artefactos que genera la aplicacion en tiempo de ejecucion: no van al repo.
+# El indice SI lleva las cifras medidas, pero lo regenera la app.
+respaldos/
+.lab/
+app/tests/capturas/
+ciclo.log
+*.log
+
+# dbpaths y datos de motores: jamas al repositorio.
+# El snapshot fisico de WiredTiger es un .tar.gz y si se versiona como ejemplo;
+# lo que no debe aparecer es el directorio descomprimido.
+data/
+dbpath/
+mongod.lock
+WiredTiger.lock
+WiredTiger.turtle
+*.wt
+dump.rdb
+appendonlydir/
+appendonly.aof*

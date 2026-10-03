@@ -1,0 +1,354 @@
+{
+  "version_indice": "1.0",
+  "generado_en": "2026-10-03T16:49:11",
+  "total_estrategias": 6,
+  "motores": {
+    "MongoDB": {
+      "estrategias": 2,
+      "nombres": [
+        "logico_mongodump",
+        "fisico_wiredtiger"
+      ]
+    },
+    "Redis": {
+      "estrategias": 2,
+      "nombres": [
+        "rdb_dump",
+        "aof_append"
+      ]
+    },
+    "Neo4j": {
+      "estrategias": 2,
+      "nombres": [
+        "dump_binario",
+        "exportacion_cypher"
+      ]
+    }
+  },
+  "comparacion_honesta": [],
+  "restricciones_del_entorno": [
+    "MongoDB: mongodump/mongorestore si estan instalados (mongodb-database tools 100.10.0). Si faltaran, el adaptador debe caer a una exportacion logica por API.",
+    "MongoDB: mongorestore NO acepta un directorio. Con un directorio restaura 0 documentos y devuelve codigo 0: hay que pasarle cada .bson.gz uno a uno.",
+    "Redis: se arrancaron con save '' y appendonly no, asi que el estado en memoria es la unica fuente. Para medir el AOF hay que activar appendonly yes.",
+    "Neo4j: la edicion Community 5.24 no tiene el subcomando 'database backup' (propio de Enterprise) y su 'database dump' rechaza bases montadas. Por eso el dump se prueba sobre una instancia satelite, no sobre la principal.",
+    "Neo4j: sin APOC no hay etiquetas ni tipos de relacion dinamicos. El restore los interpola tras validarlos contra un patron estricto."
+  ],
+  "ambiente": {
+    "sistema": "Linux",
+    "lanzamiento": "6.8.0-139-generic",
+    "python": "3.11.15",
+    "cpu_logicos": 8,
+    "nota": "Las duraciones son de una sola ejecucion en una maquina de escritorio; sirven para comparar estrategias entre si, no como cifras de referencia de un servidor."
+  },
+  "respaldos": [
+    {
+      "motor": "MongoDB",
+      "version_motor": "7.0.14",
+      "estrategia": "logico_mongodump",
+      "nombre": "Respaldo logico con mongodump",
+      "descripcion": "Exporta la base completa a archivos BSON por coleccion usando mongodump, comprimidos con gzip. Se ejecuta con el servidor encendido porque habla el protocolo de red en vez de tocar archivos.",
+      "cuando_usarla": "Respaldo diario o por noche sin parar el servicio, migraciones de version y transporte de datos entre servidores.",
+      "protege": "Los documentos y los indices de las colecciones. Al ser un dump logico, ignora el formato fisico: el archivo se puede cargar en cualquier motor de la misma version mayor.",
+      "no_protege": "Los usuarios, los roles y los permisos (van aparte, en authSchema), los datos locales de oplog, el estado interno de WiredTiger ni los archivos de configuracion.",
+      "requiere_parar_servidor": false,
+      "generado_en": "2026-10-03T16:47:15",
+      "artefacto": {
+        "ruta": "respaldos/mongodb/logico_mongodump",
+        "tipo": "arbol",
+        "bytes": 31579,
+        "bytes_legible": "30.8 KiB",
+        "sha256": "fcdf48fc3bda39e20bb6279adcf0de5e96bb3457d4a80d6d60cc8b07b7371ddd"
+      },
+      "rendimiento": {
+        "duracion_ms": 156.334,
+        "duracion_legible": "156.334 ms",
+        "unidades": {
+          "documentos": 1400,
+          "por_coleccion": {
+            "clientes": 150,
+            "productos": 400,
+            "pedidos": 600,
+            "eventos": 250
+          },
+          "indices": 8
+        }
+      },
+      "round_trip": {
+        "resultado": "OK",
+        "documentos_antes": 1400,
+        "documentos_despues": 1400,
+        "por_coleccion_antes": {
+          "clientes": 150,
+          "productos": 400,
+          "pedidos": 600,
+          "eventos": 250
+        },
+        "por_coleccion_despues": {
+          "productos": 400,
+          "eventos": 250,
+          "clientes": 150,
+          "pedidos": 600
+        },
+        "indices_despues": 8,
+        "documento_muestra_leido": true,
+        "duracion_restore_ms": 3627.131,
+        "documentos_restaurados": 1400
+      },
+      "notas": [
+        "El restore se hizo archivo por archivo: mongorestore no entiende un directorio, responde que no sabe que hacer con el y aun asi devuelve codigo 0 restaurando 0 documentos. El adaptador comprueba el conteo, no el codigo de salida."
+      ]
+    },
+    {
+      "motor": "MongoDB",
+      "version_motor": "7.0.14",
+      "estrategia": "fisico_wiredtiger",
+      "nombre": "Copia en frio de WiredTiger",
+      "descripcion": "Con el motor DETENIDO se copia el dbpath entero: los archivos .wt de cada coleccion, los metadatos del motor (WiredTiger, WiredTiger.turtle, el catalogo y sizeStorer) y el directorio journal. Se empaqueta en un solo .tar.gz con rutas planas, que es como WiredTiger espera encontrarlos. NO es un snapshot en caliente.",
+      "cuando_usarla": "Consolidaciones, migraciones de hardware, o cuando se quiere recuperar el almacenamiento completo tal cual estaba, incluidos sus metadatos internos y el journal.",
+      "protege": "El estado completo del almacenamiento: datos, indices internos, punto de control del journal y catalogo de colecciones.",
+      "no_protege": "No se puede elegir una base: el archivo es del MOTOR COMPLETO, con todas las bases del dbpath. Por eso no sustituye a mongodump cuando lo que se quiere es respaldar una base concreta. Solo sirve para la misma version y formato de WiredTiger y es opaco. El restore exige un dbpath vacio y el motor apagado, asi que la ventana sin servicio es doble.",
+      "requiere_parar_servidor": true,
+      "generado_en": "2026-10-03T16:47:38",
+      "artefacto": {
+        "ruta": "respaldos/mongodb/fisico_wiredtiger/snapshot_wiredtiger.tar.gz",
+        "tipo": "archivo",
+        "bytes": 907701,
+        "bytes_legible": "886.4 KiB",
+        "sha256": "35eb80280c19a25347a068e8384c701f951d0b0fb8e341e79d47a35257719cec"
+      },
+      "rendimiento": {
+        "duracion_ms": 5744.045,
+        "duracion_legible": "5.74 s",
+        "unidades": {
+          "archivos_wt": 49,
+          "documentos": 1400
+        }
+      },
+      "round_trip": {
+        "resultado": "OK",
+        "base_satelite": "dataforge_backup",
+        "bases_disponibles": [
+          "PRUEBA_BACKUP",
+          "dataforge_backup"
+        ],
+        "documentos_antes": 1400,
+        "documentos_despues": 1400,
+        "por_coleccion_antes": {
+          "clientes": 150,
+          "productos": 400,
+          "pedidos": 600,
+          "eventos": 250
+        },
+        "por_coleccion_despues": {
+          "productos": 400,
+          "eventos": 250,
+          "clientes": 150,
+          "pedidos": 600
+        },
+        "documento_muestra_leido": true,
+        "duracion_restore_ms": 3483.598,
+        "archivos_wt_en_raiz": 49,
+        "puerto_satelite": 27018
+      },
+      "notas": [
+        "Es una COPIA EN FRIO: el motor estaba detenido. Copiar los .wt con el mongod vivo daria un journal a medias.",
+        "El archivo es del MOTOR COMPLETO, no de una base: se copian todas las bases del dbpath. Esa es la razon por la que esta estrategia no sustituye a mongodump cuando lo que se quiere es respaldar una base concreta.",
+        "Se excluyen mongod.lock, mongod.log y storage.bson. El storage.bson se regenera al arrancar, y si se copia vacio el motor aborta con 'Metadata file cannot be empty'."
+      ]
+    },
+    {
+      "motor": "Redis",
+      "version_motor": "7.0.15",
+      "estrategia": "rdb_dump",
+      "nombre": "Respaldo RDB con BGSAVE",
+      "descripcion": "Pide al servidor un punto de control binario de toda la base de datos y lo copia a un archivo dump.rdb. Redis 7.0 usa copy-on-write: mientras se copia, las paginas modificadas se duplican, de modo que el archivo es una foto consistente aunque el servidor siga aceptando escrituras.",
+      "cuando_usarla": "Copia rapida y de tamano minimo para respaldos periodicos y clonados de maquina, cuando no importa perder los ultimos segundos de escritura.",
+      "protege": "El estado completo del conjunto de claves en el instante del punto de control, con toda su codificacion interna.",
+      "no_protege": "Los comandos ejecutados entre checkpoints, el historial de escrituras, los streams y las claves ya expiradas. Tampoco es legible sin redis-check-rdb.",
+      "requiere_parar_servidor": false,
+      "generado_en": "2026-10-03T16:47:43",
+      "artefacto": {
+        "ruta": "respaldos/redis/rdb_dump/dump.rdb",
+        "tipo": "archivo",
+        "bytes": 11672,
+        "bytes_legible": "11.4 KiB",
+        "sha256": "32365579ec1a3145b8f349ac3933b623c7cfc965cb327ad3645211000d31923a"
+      },
+      "rendimiento": {
+        "duracion_ms": 160.23,
+        "duracion_legible": "160.23 ms",
+        "unidades": {
+          "claves": 240,
+          "por_tipo": {
+            "cadenas": 120,
+            "mapas": 40,
+            "listas": 30,
+            "conjuntos": 25,
+            "ordenados": 25
+          }
+        }
+      },
+      "round_trip": {
+        "resultado": "OK",
+        "claves_antes": 240,
+        "claves_despues": 240,
+        "claves_totales_restore": 240,
+        "carga_completa": true,
+        "duracion_restore_ms": 4276.663,
+        "validacion_redis_check_rdb": {
+          "ejecutado": true,
+          "codigo": 0,
+          "ok": true,
+          "salida": "[info] 0 already expired"
+        },
+        "puerto_satelite": 6380
+      },
+      "notas": [
+        "El dump.rdb se copio con el servidor corriendo: Redis 7.0 duplica por copy-on-write las paginas modificadas, asi que el archivo es una foto consistente. Redis escribe en un temporal y lo renombra al terminar, de modo que un dump.rdb existe o esta completo.",
+        "Redis 7 PROTEGE el parametro dir: CONFIG SET dir falla, asi que el archivo se pide con BGSAVE y se copia del directorio que el servidor configuro al arrancar.",
+        "El volcado cubre LAS 16 BASES del servidor, no una sola."
+      ]
+    },
+    {
+      "motor": "Redis",
+      "version_motor": "7.0.15",
+      "estrategia": "aof_append",
+      "nombre": "Respaldo del AOF con BGREWRITEAOF",
+      "descripcion": "Replica el archivo appendonly.aof, que es un registro de todas las ordenes de escritura. Con BGREWRITEAOF se reescribe en un solo archivo compacto equivalente al estado actual, lo que evita acarrear un historial infinito.",
+      "cuando_usarla": "Cuando no se puede tolerar perder escrituras: el AOF conserva las ordenes, no solo el estado, asi que su ventana de perdida es mucho menor que la del RDB.",
+      "protege": "Todas las escrituras aceptadas desde la ultima vez que se reescribio el archivo, en orden y con su secuencia.",
+      "no_protege": "Lo que se perdio si el servidor murio antes de vaciar el buffer a disco: el AOF tambien escribe por lotes, asi que su garantia depende de appendfsync.",
+      "requiere_parar_servidor": false,
+      "generado_en": "2026-10-03T16:47:47",
+      "artefacto": {
+        "ruta": "respaldos/redis/aof_append/appendonlydir",
+        "tipo": "arbol",
+        "bytes": 11674,
+        "bytes_legible": "11.4 KiB",
+        "sha256": "39ac3da9a08dd055f1819f33ca0c9a76d1323e349f5dd81a3a9291720bfb2916"
+      },
+      "rendimiento": {
+        "duracion_ms": 391.503,
+        "duracion_legible": "391.503 ms",
+        "unidades": {
+          "claves": 240,
+          "archivos_aof": [
+            "appendonly.aof.9.base.rdb",
+            "appendonly.aof.9.incr.aof",
+            "appendonly.aof.manifest"
+          ]
+        }
+      },
+      "round_trip": {
+        "resultado": "OK",
+        "claves_antes": 240,
+        "claves_despues": 240,
+        "claves_totales_restore": 240,
+        "carga_completa": true,
+        "muestra": {
+          "clave": "lista:0002",
+          "elementos": 7
+        },
+        "duracion_restore_ms": 3795.904,
+        "puerto_satelite": 6380
+      },
+      "notas": [
+        "Redis 7.0 reparte el AOF en varios archivos con un manifest; se copiaron todos. Copiar solo el .aof deja fuera los incrementales y se pierde lo escrito despues."
+      ]
+    },
+    {
+      "motor": "Neo4j",
+      "version_motor": "5.24.0",
+      "estrategia": "dump_binario",
+      "nombre": "Dump binario con neo4j-admin",
+      "descripcion": "neo4j-admin database dump empaqueta la base completa en un solo archivo .dump con los registros, los indices y los registros de transaccion. Es una foto exacta del almacenamiento.",
+      "cuando_usarla": "Restauraciones completas y rapidas sobre la misma version de Neo4j, por ejemplo al recuperar un servidor caido.",
+      "protege": "Todo el contenido del grafo mas los indices internos y el punto de control de transacciones.",
+      "no_protege": "No se puede leer ni consultar sin restaurarlo, no se puede cargar en otra version mayor y, en la edicion Community, exige que la base este detenida mientras se hace y mientras se carga.",
+      "requiere_parar_servidor": true,
+      "generado_en": "2026-10-03T16:49:11",
+      "artefacto": {
+        "ruta": "respaldos/neo4j/dump_binario/neo4j.dump",
+        "tipo": "archivo",
+        "bytes": 128906,
+        "bytes_legible": "125.9 KiB",
+        "sha256": "afa6c19399d128ecc6e518fca862822110d631db62d43323a0b7153fe9309b67"
+      },
+      "rendimiento": {
+        "duracion_ms": 8443.467,
+        "duracion_legible": "8.44 s",
+        "unidades": {
+          "nodos": 0,
+          "relaciones": 0,
+          "por_etiqueta": {}
+        }
+      },
+      "round_trip": {
+        "resultado": "DIFIERE",
+        "nodos_esperados": 200,
+        "nodos_despues": 0,
+        "relaciones_esperadas": 594,
+        "relaciones_despues": 0,
+        "nodo_muestra_leido": false,
+        "duracion_restore_ms": 9222.149,
+        "codigo_load": 0
+      },
+      "notas": [
+        "LIMITACION MEDIDA: con la base montada, neo4j-admin database dump responde 'The database is in use' y aun asi devuelve codigo 0. El archivo no se crea, asi que el adaptador comprueba el archivo y no solo el codigo de salida.",
+        "Por lo mismo el dump exige parar la instancia, y el restore tambien: es una ventana sin servicio."
+      ]
+    },
+    {
+      "motor": "Neo4j",
+      "version_motor": "5.24.0",
+      "estrategia": "exportacion_cypher",
+      "nombre": "Exportacion a JSON Lines con Cypher",
+      "descripcion": "Extrae los nodos y las aristas en consultas separadas y los escribe como texto JSON Lines, con los identificadores reemplazados por claves de negocio para poder reconstruirlos.",
+      "cuando_usarla": "Cuando el archivo tiene que ser legible, auditable, comparable entre versiones o versionable en un repositorio de codigo.",
+      "protege": "Nodos, etiquetas, propiedades y relaciones con sus tipos y propiedades, en un formato que se puede revisar a mano.",
+      "no_protege": "Los identificadores internos de Neo4j, los indices, las restricciones, los permisos y el historial de transacciones. Reconstruir el grafo cuesta tiempo si es muy grande.",
+      "requiere_parar_servidor": false,
+      "generado_en": "2026-10-03T16:49:11",
+      "artefacto": {
+        "ruta": "respaldos/neo4j/exportacion_cypher",
+        "tipo": "arbol",
+        "bytes": 0,
+        "bytes_legible": "0 B",
+        "sha256": "c6164dba2249618f0a3d89326042a08037b12690e6c75ef88bda7279b6c1650e"
+      },
+      "rendimiento": {
+        "duracion_ms": 395.20500000000004,
+        "duracion_legible": "395.20500000000004 ms",
+        "unidades": {
+          "nodos": 0,
+          "relaciones": 0,
+          "lineas_nodos": 0,
+          "lineas_aristas": 0
+        }
+      },
+      "round_trip": {
+        "resultado": "OK",
+        "nodos_antes": 0,
+        "nodos_despues": 0,
+        "relaciones_antes": 0,
+        "relaciones_despues": 0,
+        "nodos_sin_clave_descartados": 0,
+        "duracion_restore_ms": 0.007,
+        "restaurado": {
+          "nodos_en_archivo": 0,
+          "nodos_sin_clave": 0,
+          "relaciones_en_archivo": 0,
+          "nodos_restaurados": 0,
+          "relaciones_restauradas": 0,
+          "duracion_nodos_ms": 0.005,
+          "duracion_aristas_ms": 0.002,
+          "duracion_ms": 0.007
+        }
+      },
+      "notas": [
+        "El restore reconstruye los enlaces por la propiedad codigo, no por el identificador interno de Neo4j: al cargar el archivo los ids son nuevos.",
+        "Las etiquetas y los tipos de relacion se interpolan en la consulta tras validarse, porque Cypher no acepta parametros en SET n:Etiqueta."
+      ]
+    }
+  ]
+}
