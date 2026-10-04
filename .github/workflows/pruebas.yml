@@ -40,10 +40,15 @@ jobs:
       #   - cualquier otro fallo es un defecto real y sale con codigo 1.
       - name: Suite de pruebas
         run: |
-          set -o pipefail
-          python3 app/tests/casos.py 2>&1 | tee salida.txt
-          codigo=${PIPESTATUS[0]}
-          echo "codigo de salida de la suite: $codigo"
+          # El codigo de salida de la suite NO es el veredicto del job: lo
+          # decide clasificar_ci.py, que separa un fallo de entorno de uno de
+          # codigo. GitHub ejecuta estos pasos con `bash -e`, asi que sin esto
+          # la suite abortaria el job antes de que el clasificador opinara.
+          set +e
+          python3 app/tests/casos.py > salida.txt 2>&1
+          echo "codigo de salida de la suite: $?"
+          cat salida.txt
+          exit 0
 
       - name: Clasificar el resultado
         if: always()
