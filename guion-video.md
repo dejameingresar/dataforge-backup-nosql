@@ -93,10 +93,12 @@ curl -s https://dataforge-backup-si783.onrender.com/api/motores
 | Redis | `rdb_dump` | `dump.rdb` | 240 → 240 claves |
 | Redis | `aof_append` | `appendonlydir/` | 240 → 240 claves |
 | Neo4j | `dump_binario` | `neo4j.dump` | 200/594 → 200/594 |
-| Neo4j | `exportacion_cypher` | JSON Lines | 200/594 → 200/594 |
+| Neo4j | `exportacion_cypher` | JSON Lines | 200 nodos · **590 de 594** relaciones |
 
 **Voz:**
-> Seis de seis restauraron exactamente lo que había.
+> Cinco de seis restauraron exactamente lo que había. La sexta es la que nos
+> dio el trabajo del que quiero hablar ahora mismo, así que no la vamos a
+> maquillar.
 
 **Voz (matizando):**
 > Y una advertencia que está escrita en el propio índice: son duraciones de una
@@ -151,8 +153,12 @@ don't know what to do with file ... skipping...
 
 **Voz:**
 > La tentación era relajar el umbral. Con `CREATE` en lugar de `MERGE`, las 594
-> se conservan. Relajar la comparación habría convertido un defecto real en un
-> falso positivo.
+> se conservan: eso es lo que hace el código ahora, en la línea 470. Relajar la
+> comparación habría convertido un defecto real en un falso positivo.
+
+> Y hay un detalle honesto que conviene decir: el índice del repositorio guarda
+> la medición **anterior** al arreglo, por eso todavía marca 590. El código ya
+> está corregido; el índice hay que regenerarlo con los motores levantados.
 
 ---
 
@@ -207,8 +213,9 @@ don't know what to do with file ... skipping...
 ## 4:30 — Cierre
 
 **Voz:**
-> Resultado: seis estrategias medidas sobre tres motores reales, seis de seis
-> restaurando lo que tenían.
+> Resultado: seis estrategias medidas sobre tres motores reales. Cinco
+> restauraron exactamente lo que tenían. La sexta nos enseñó por qué un conteo
+> cercano no sirve como verificación.
 
 > Tres conclusiones. Primero: un respaldo no es un archivo, es una cadena —
 > backup, hash, restauración y conteo. Segundo: **el código de salida no es

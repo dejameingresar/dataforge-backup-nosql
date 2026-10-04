@@ -357,5 +357,19 @@
         "Las etiquetas y los tipos de relacion se interpolan en la consulta tras validarse, porque Cypher no acepta parametros en SET n:Etiqueta."
       ]
     }
-  ]
+  ],
+  "nota_del_indice": {
+    "generado_en": "2026-10-03T19:43:54",
+    "medicion_desfasada": [
+      {
+        "estrategia": "exportacion_cypher",
+        "valor_registrado": "590 de 594 relaciones (resultado: DIFIERE)",
+        "motivo": "El codigo que produce esta medicion usaba MERGE para las aristas, que colapsa en una sola las aristas repetidas entre el mismo par de nodos. El commit c27e041 lo cambio a CREATE.",
+        "estado_del_codigo": "Corregido: app/adaptadores/neo4j.py crea las aristas con CREATE.",
+        "estado_de_esta_medicion": "Es la medicion ANTERIOR al arreglo. Regenerar el indice con los motores levantados para actualizarla.",
+        "no_se_alteraron_las_cifras": "Este campo es informativo. Ninguna medicion de este archivo se modifico a mano."
+      }
+    ],
+    "otros_motores_levantados_en_la_corrida": "MongoDB 7.0.14, Redis 7.0.15, Neo4j 5.24.0"
+  }
 }
