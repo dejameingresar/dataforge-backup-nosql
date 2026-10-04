@@ -10,6 +10,15 @@ No requiere `pip install`: el servidor es `http.server` de la biblioteca estánd
 
 ---
 
+## Enlaces
+
+| | |
+|---|---|
+| **Aplicación publicada** | https://dataforge-backup-si783.onrender.com |
+| **Repositorio** | https://github.com/dejameingresar/dataforge-backup-nosql |
+| **Artículo** | https://dev.to/dejameingresar/seis-estrategias-de-respaldo-para-bases-de-datos-nosql-y-que-falla-de-verdad-5hce |
+| **Video** | _pendiente de publicación_ |
+
 ## 1. Las tres motores y qué se midió
 
 | Motor | Versión | Puerto | Herramienta de respaldo |
@@ -206,10 +215,3 @@ El servidor no reimplementa la lógica de respaldos: la pide a `app/nucleo/`
 mediante `app/adaptador.py`, que además **vuelve a medir en disco** lo que el
 núcleo afirma y convierte cualquier problema en un error de usuario (400).
 Ese contrato está escrito en [`CONTRATO.md`](CONTRATO.md).
-
-## 7. Artículo del proyecto
-
-**Leer en Dev.to:** <https://dev.to/dejameingresar/seis-estrategias-de-respaldo-para-bases-de-datos-nosql-y-que-falla-de-verdad-5hce>
-
-El artículo documenta las seis estrategias con las cifras medidas y los cinco
-fallos silenciosos que aparecieron al restaurar y contar.
