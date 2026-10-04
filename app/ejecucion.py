@@ -556,6 +556,12 @@ def probar_neo4j() -> list:
             antes = neo4j.contar_grafo(sesion)
             _log(f"  sembrado {conteos}")
             _log(f"  conteo real: {antes}")
+            # El conteo de referencia se guarda DESPUES de sembrar y ANTES de
+            # que el dump mueva o vacie la base: es lo que despues se compara.
+            os.makedirs(config.DIR_NEO4J, exist_ok=True)
+            with open(os.path.join(config.DIR_NEO4J, "_esperado_neo4j.json"), "w") as archivo:
+                json.dump(antes, archivo)
+            _log(f"  referencia guardada: {antes['nodos']} nodos, {antes['relaciones']} relaciones")
 
             # --- Estrategia 1: dump binario ------------------------------
             # Primero se comprueba el limite real de Community: dumpear la
@@ -950,15 +956,9 @@ def main() -> int:
     entradas += probar_redis()
 
     _log("3/3  Neo4j")
-    # Se guarda el conteo esperado antes de que el dump lo cambie de sitio.
-    driver = neo4j.conectar_neo4j(URI_NEO4J_SATELITE) if _neo4j_satelite_lista() else None
-    if driver:
-        with driver.session(database=config.DB_NEO4J_ORIGEN) as sesion:
-            _log("  registrando el conteo esperado del grafo")
-            conteo = neo4j.contar_grafo(sesion)
-        driver.close()
-        with open(os.path.join(config.DIR_NEO4J, "_esperado_neo4j.json"), "w") as archivo:
-            json.dump(conteo, archivo)
+    # El conteo esperado lo registra probar_neo4j() DESPUES de sembrar el
+    # grafo. Antes se escribia aqui, antes de la siembra, y por eso guardaba
+    # cero: el satelite estaba vacio todavia.
     entradas += probar_neo4j()
 
     extras = {}

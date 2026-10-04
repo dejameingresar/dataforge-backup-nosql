@@ -458,11 +458,16 @@ def restaurar_nodos_cypher(
             # Los nodos ya NO llevan una etiqueta generica: cada uno se creo
             # con la suya. Por eso las aristas se emparejan por la clave de
             # negocio, que es lo que el exportador guardo, y no por la etiqueta.
+            # CREATE y no MERGE: en un grafo puede haber VARIAS aristas del
+            # mismo tipo entre el mismo par de nodos, con propiedades
+            # distintas. MERGE las colapsa en una sola y el conteo sale
+            # corto; CREATE las conserva todas, que es lo que faithfulmente
+            # replica el respaldo.
             consulta = (
                 "UNWIND $filas AS fila "
                 "MATCH (a {codigo: fila.origen}) "
                 "MATCH (b {codigo: fila.destino}) "
-                f"MERGE (a)-[r:{tipo}]->(b) "
+                f"CREATE (a)-[r:{tipo}]->(b) "
                 "SET r += fila.propiedades "
                 "RETURN count(r) AS c"
             )

@@ -1,6 +1,6 @@
 {
   "version_indice": "1.0",
-  "generado_en": "2026-10-03T19:22:07",
+  "generado_en": "2026-10-03T19:43:54",
   "total_estrategias": 6,
   "motores": {
     "MongoDB": {
@@ -51,17 +51,17 @@
       "protege": "Los documentos y los indices de las colecciones. Al ser un dump logico, ignora el formato fisico: el archivo se puede cargar en cualquier motor de la misma version mayor.",
       "no_protege": "Los usuarios, los roles y los permisos (van aparte, en authSchema), los datos locales de oplog, el estado interno de WiredTiger ni los archivos de configuracion.",
       "requiere_parar_servidor": false,
-      "generado_en": "2026-10-03T19:20:30",
+      "generado_en": "2026-10-03T19:41:51",
       "artefacto": {
         "ruta": "respaldos/mongodb/logico_mongodump",
         "tipo": "arbol",
-        "bytes": 31553,
-        "bytes_legible": "30.8 KiB",
-        "sha256": "169fbf7bab61bc4b483bbfa832e3026adbf22f0676e69bc6f5d6089b495b0b73"
+        "bytes": 31595,
+        "bytes_legible": "30.9 KiB",
+        "sha256": "28f262452b9e49eb86bba9b71019617481a640867240e56bc0b440e9907cba05"
       },
       "rendimiento": {
-        "duracion_ms": 223.682,
-        "duracion_legible": "223.682 ms",
+        "duracion_ms": 328.066,
+        "duracion_legible": "328.066 ms",
         "unidades": {
           "documentos": 1400,
           "por_coleccion": {
@@ -84,14 +84,14 @@
           "eventos": 250
         },
         "por_coleccion_despues": {
-          "pedidos": 600,
           "eventos": 250,
+          "pedidos": 600,
           "clientes": 150,
           "productos": 400
         },
         "indices_despues": 8,
         "documento_muestra_leido": true,
-        "duracion_restore_ms": 3151.921,
+        "duracion_restore_ms": 3206.067,
         "documentos_restaurados": 1400
       },
       "notas": [
@@ -108,17 +108,17 @@
       "protege": "El estado completo del almacenamiento: datos, indices internos, punto de control del journal y catalogo de colecciones.",
       "no_protege": "No se puede elegir una base: el archivo es del MOTOR COMPLETO, con todas las bases del dbpath. Por eso no sustituye a mongodump cuando lo que se quiere es respaldar una base concreta. Solo sirve para la misma version y formato de WiredTiger y es opaco. El restore exige un dbpath vacio y el motor apagado, asi que la ventana sin servicio es doble.",
       "requiere_parar_servidor": true,
-      "generado_en": "2026-10-03T19:20:53",
+      "generado_en": "2026-10-03T19:42:15",
       "artefacto": {
         "ruta": "respaldos/mongodb/fisico_wiredtiger/snapshot_wiredtiger.tar.gz",
         "tipo": "archivo",
-        "bytes": 660321,
-        "bytes_legible": "644.8 KiB",
-        "sha256": "2566970293ea5d5e6c315f405714293cc18379941c25d3d2c448b2cb3d3e9869"
+        "bytes": 1033514,
+        "bytes_legible": "1009.3 KiB",
+        "sha256": "9f2467b91993205cef975d88e06fb527fdc7e9b1c3dcca1378807801e97ba90c"
       },
       "rendimiento": {
-        "duracion_ms": 1732.809,
-        "duracion_legible": "1.73 s",
+        "duracion_ms": 1900.197,
+        "duracion_legible": "1.90 s",
         "unidades": {
           "archivos_wt": 49,
           "documentos": 1400
@@ -140,13 +140,13 @@
           "eventos": 250
         },
         "por_coleccion_despues": {
-          "pedidos": 600,
           "eventos": 250,
+          "pedidos": 600,
           "clientes": 150,
           "productos": 400
         },
         "documento_muestra_leido": true,
-        "duracion_restore_ms": 6349.395,
+        "duracion_restore_ms": 8211.525,
         "archivos_wt_en_raiz": 49,
         "puerto_satelite": 27018
       },
@@ -166,17 +166,17 @@
       "protege": "El estado completo del conjunto de claves en el instante del punto de control, con toda su codificacion interna.",
       "no_protege": "Los comandos ejecutados entre checkpoints, el historial de escrituras, los streams y las claves ya expiradas. Tampoco es legible sin redis-check-rdb.",
       "requiere_parar_servidor": false,
-      "generado_en": "2026-10-03T19:20:58",
+      "generado_en": "2026-10-03T19:42:20",
       "artefacto": {
         "ruta": "respaldos/redis/rdb_dump/dump.rdb",
         "tipo": "archivo",
         "bytes": 11586,
         "bytes_legible": "11.3 KiB",
-        "sha256": "38839e8924c98041e936a3f9f0edc95f00fb3b24daed599b1aad76d519c6f9bd"
+        "sha256": "1abe787edcf08f549cb37784db797d7583cadddeb8174ae314c1c35cdf6b5cd0"
       },
       "rendimiento": {
-        "duracion_ms": 260.671,
-        "duracion_legible": "260.671 ms",
+        "duracion_ms": 156.776,
+        "duracion_legible": "156.776 ms",
         "unidades": {
           "claves": 240,
           "por_tipo": {
@@ -194,7 +194,7 @@
         "claves_despues": 240,
         "claves_totales_restore": 240,
         "carga_completa": true,
-        "duracion_restore_ms": 4198.631,
+        "duracion_restore_ms": 4834.144,
         "validacion_redis_check_rdb": {
           "ejecutado": true,
           "codigo": 0,
@@ -219,22 +219,22 @@
       "protege": "Todas las escrituras aceptadas desde la ultima vez que se reescribio el archivo, en orden y con su secuencia.",
       "no_protege": "Lo que se perdio si el servidor murio antes de vaciar el buffer a disco: el AOF tambien escribe por lotes, asi que su garantia depende de appendfsync.",
       "requiere_parar_servidor": false,
-      "generado_en": "2026-10-03T19:21:03",
+      "generado_en": "2026-10-03T19:42:25",
       "artefacto": {
         "ruta": "respaldos/redis/aof_append/appendonlydir",
         "tipo": "arbol",
         "bytes": 11678,
         "bytes_legible": "11.4 KiB",
-        "sha256": "eb0c5731dcc578d3742b03a994418b0a918241b629f9cdbb780c90f828127d4a"
+        "sha256": "2639aaed26fcfca575e34374febc6951ab578dbd34feadd221f906118dd15c65"
       },
       "rendimiento": {
-        "duracion_ms": 728.999,
-        "duracion_legible": "728.999 ms",
+        "duracion_ms": 479.877,
+        "duracion_legible": "479.877 ms",
         "unidades": {
           "claves": 240,
           "archivos_aof": [
-            "appendonly.aof.11.base.rdb",
-            "appendonly.aof.11.incr.aof",
+            "appendonly.aof.13.base.rdb",
+            "appendonly.aof.13.incr.aof",
             "appendonly.aof.manifest"
           ]
         }
@@ -246,10 +246,10 @@
         "claves_totales_restore": 240,
         "carga_completa": true,
         "muestra": {
-          "clave": "lista:0014",
-          "elementos": 4
+          "clave": "conjunto:0024",
+          "miembros": 6
         },
-        "duracion_restore_ms": 4224.197,
+        "duracion_restore_ms": 4213.957,
         "puerto_satelite": 6380
       },
       "notas": [
@@ -266,17 +266,17 @@
       "protege": "Todo el contenido del grafo mas los indices internos y el punto de control de transacciones.",
       "no_protege": "No se puede leer ni consultar sin restaurarlo, no se puede cargar en otra version mayor y, en la edicion Community, exige que la base este detenida mientras se hace y mientras se carga.",
       "requiere_parar_servidor": true,
-      "generado_en": "2026-10-03T19:22:05",
+      "generado_en": "2026-10-03T19:43:47",
       "artefacto": {
         "ruta": "respaldos/neo4j/dump_binario/neo4j.dump",
         "tipo": "archivo",
-        "bytes": 220719,
-        "bytes_legible": "215.5 KiB",
-        "sha256": "b3a5df2263e672999b7056725c97785ed8906dafee64a14739705c4f9bb357d8"
+        "bytes": 338062,
+        "bytes_legible": "330.1 KiB",
+        "sha256": "fe3a5fb41a076e2ba0044ddbf63cff00e126d0ff6de9baccbde904ac646424c6"
       },
       "rendimiento": {
-        "duracion_ms": 5453.346,
-        "duracion_legible": "5.45 s",
+        "duracion_ms": 9296.079,
+        "duracion_legible": "9.30 s",
         "unidades": {
           "nodos": 200,
           "relaciones": 594,
@@ -291,13 +291,13 @@
         }
       },
       "round_trip": {
-        "resultado": "DIFIERE",
-        "nodos_esperados": 3,
+        "resultado": "OK",
+        "nodos_esperados": 200,
         "nodos_despues": 200,
-        "relaciones_esperadas": 2,
+        "relaciones_esperadas": 594,
         "relaciones_despues": 594,
         "nodo_muestra_leido": true,
-        "duracion_restore_ms": 3546.427,
+        "duracion_restore_ms": 9792.776,
         "codigo_load": 0
       },
       "notas": [
@@ -315,17 +315,17 @@
       "protege": "Nodos, etiquetas, propiedades y relaciones con sus tipos y propiedades, en un formato que se puede revisar a mano.",
       "no_protege": "Los identificadores internos de Neo4j, los indices, las restricciones, los permisos y el historial de transacciones. Reconstruir el grafo cuesta tiempo si es muy grande.",
       "requiere_parar_servidor": false,
-      "generado_en": "2026-10-03T19:22:07",
+      "generado_en": "2026-10-03T19:43:54",
       "artefacto": {
         "ruta": "respaldos/neo4j/exportacion_cypher",
         "tipo": "arbol",
         "bytes": 106607,
         "bytes_legible": "104.1 KiB",
-        "sha256": "1e2be3a0e84a134766b88fc84df54c81d3c0691efb1ff321a82cf4d369c66f90"
+        "sha256": "40c9eca5fe1288d030eef15e7ae92aa4e1a77c64a2ac78d6c3008fcb842effbc"
       },
       "rendimiento": {
-        "duracion_ms": 397.74,
-        "duracion_legible": "397.74 ms",
+        "duracion_ms": 650.3389999999999,
+        "duracion_legible": "650.3389999999999 ms",
         "unidades": {
           "nodos": 200,
           "relaciones": 594,
@@ -340,16 +340,16 @@
         "relaciones_antes": 594,
         "relaciones_despues": 590,
         "nodos_sin_clave_descartados": 0,
-        "duracion_restore_ms": 1635.4389999999999,
+        "duracion_restore_ms": 5644.494,
         "restaurado": {
           "nodos_en_archivo": 200,
           "nodos_sin_clave": 0,
           "relaciones_en_archivo": 594,
           "nodos_restaurados": 200,
           "relaciones_restauradas": 594,
-          "duracion_nodos_ms": 654.928,
-          "duracion_aristas_ms": 980.511,
-          "duracion_ms": 1635.4389999999999
+          "duracion_nodos_ms": 1770.832,
+          "duracion_aristas_ms": 3873.662,
+          "duracion_ms": 5644.494
         }
       },
       "notas": [
