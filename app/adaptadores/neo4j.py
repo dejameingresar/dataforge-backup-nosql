@@ -401,23 +401,32 @@ def restaurar_nodos_cypher(
                 }
             )
         if filas:
-            sesion.run(
-                "UNWIND $filas AS fila "
-                "MERGE (n:Entidad {codigo: fila.clave}) "
-                "SET n += fila.propiedades "
-                "RETURN count(n) AS c",
-                filas=filas,
-            ).consume()
-            # Las etiquetas van aparte porque su numero varia por nodo: se
-            # agrupan y se aplica una consulta por cada conjunto distinto.
+            # Neo4j 5 no admite "SET n:Etiqueta": eso exige el plugin APOC, que
+            # no esta instalado. La forma sin plugins es poner las etiquetas en
+            # el CREATE, pero el numero de etiquetas varia por nodo, asi que las
+            # filas se agrupan por su conjunto exacto y cada grupo se crea con su
+            # propio CREATE, que si admite varias: CREATE (n:Uno:Dos {..}).
             for grupo in _agrupar_etiquetas(filas):
-                consulta = (
+                etiquetas = grupo["etiquetas"]
+                if not etiquetas:
+                    continue
+                # Las etiquetas salen del grafo exportado y se interpolan en la
+                # consulta, asi que se filtran: solo letras, digitos y guion bajo.
+                seguras = [e for e in etiquetas if _etiqueta_segura(e)]
+                if not seguras:
+                    continue
+                cabecera = ":".join(seguras)
+                lote_filas = [
+                    {"clave": f["clave"], "propiedades": f["propiedades"]}
+                    for f in grupo["filas"]
+                ]
+                sesion.run(
                     "UNWIND $filas AS fila "
-                    "MATCH (n:Entidad {codigo: fila.clave}) "
-                    + "".join(f"SET n:{etiqueta} " for etiqueta in grupo["etiquetas"])
-                    + "RETURN count(n) AS c"
-                )
-                sesion.run(consulta, filas=grupo["claves"]).consume()
+                    f"CREATE (n:{cabecera} {{codigo: fila.clave}}) "
+                    "SET n += fila.propiedades "
+                    "RETURN count(n) AS c",
+                    filas=lote_filas,
+                ).consume()
     duracion_nodos = round((time.perf_counter() - inicio) * 1000.0, 3)
 
     inicio = time.perf_counter()
@@ -446,10 +455,13 @@ def restaurar_nodos_cypher(
             ]
             if not filas:
                 continue
+            # Los nodos ya NO llevan una etiqueta generica: cada uno se creo
+            # con la suya. Por eso las aristas se emparejan por la clave de
+            # negocio, que es lo que el exportador guardo, y no por la etiqueta.
             consulta = (
                 "UNWIND $filas AS fila "
-                "MATCH (a:Entidad {codigo: fila.origen}) "
-                "MATCH (b:Entidad {codigo: fila.destino}) "
+                "MATCH (a {codigo: fila.origen}) "
+                "MATCH (b {codigo: fila.destino}) "
                 f"MERGE (a)-[r:{tipo}]->(b) "
                 "SET r += fila.propiedades "
                 "RETURN count(r) AS c"
@@ -481,17 +493,30 @@ def _patron_identificador(texto: str) -> bool:
 
 
 def _agrupar_etiquetas(filas: list) -> list:
-    """Agrupa las claves que comparten el mismo conjunto de etiquetas.
+    """Agrupa las filas que comparten el mismo conjunto de etiquetas.
 
-    Devuelve listas de dicts con la forma {"clave": ..., "etiquetas": [...]},
-    para que cada grupo se pueda resolver con una sola consulta.
+    Devuelve listas de dicts con la forma {"filas": [...], "etiquetas": [...]}.
+    Se agrupa por el conjunto COMPLETO de etiquetas porque Neo4j 5, sin APOC,
+    solo permite crearlas en el propio CREATE: no hay forma de añadirlas
+    despues. Ademas el "filas" completo es lo que necesita la consulta, porque
+    cada nodo se crea con sus propiedades.
     """
     grupos: dict = {}
     for fila in filas:
         conjunto = tuple(sorted(fila["etiquetas"]))
         grupos.setdefault(conjunto, []).append(fila)
     return [
-        {"claves": [f["clave"] for f in miembros], "etiquetas": list(conjunto)}
+        {"filas": miembros, "etiquetas": list(conjunto)}
         for conjunto, miembros in grupos.items()
         if conjunto
     ]
+
+
+def _etiqueta_segura(etiqueta: str) -> bool:
+    """True si la etiqueta puede interpolarse en una consulta sin romperla.
+
+    Las etiquetas salen del grafo que se acaba de exportar, asi que no son de
+    confianza para concatenarse en Cypher. Solo se aceptan letras ASCII,
+    digitos y guion bajo, que es lo que Neo4j acepta como etiqueta.
+    """
+    return bool(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", etiqueta or ""))
