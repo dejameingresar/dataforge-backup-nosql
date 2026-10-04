@@ -31,15 +31,41 @@ jobs:
         run: |
           python3 checks.py app.py app/adaptador.py app/tests/casos.py
 
-      - name: Suite de pruebas
-        # La suite necesita los motores para los casos T-17..T-26, asi que se
-        # levanta lo que se puede levantar y se registra el resultado real.
+      # Antes este paso hacia `set +e` y `exit 0`: la suite no podia poner el
+      # workflow en rojo jamás, aunque el comentario de arriba afirmara lo
+      # contrario. Ahora se separa lo que depende de un motor (el runner de
+      # GitHub Actions no tiene MongoDB, Redis ni Neo4j) de lo que es un fallo
+      # real de codigo. Los casos sin motor se informan y se saltan; cualquier
+      # otro fallo pone el job en rojo.
+      - name: Suite de pruebas (casos que no requieren motores)
         run: |
-          set +e
-          python3 app/tests/casos.py
-          codigo=$?
-          echo "codigo de salida: $codigo"
-          exit 0
+          set -o pipefail
+          python3 app/tests/casos.py 2>&1 | tee salida.txt
+          echo "codigo de salida: ${PIPESTATUS[0]}"
+
+      - name: Clasificar el resultado
+        run: |
+          set -o pipefail
+          # La suite marca los casos que dependen de motores con un motivo
+          # explicito. Se cuentan para distinguirlos de un fallo vero.
+          SIN_MOTOR=$(grep -cE "motor (no )?(levantado|apagado|ausente|no disponible)|conector ausente|no hay motor" salida.txt || true)
+          FALLOS=$(grep -cE "^(FALLA|FAIL)" salida.txt || true)
+          echo "casos omitidos por motor ausente: $SIN_MOTOR"
+          echo "fallos de codigo: $FALLOS"
+          if [ "$FALLOS" -gt 0 ]; then
+            echo "::error::La suite tiene $FALLOS fallos que no dependen de los motores"
+            grep -E "^(FALLA|FAIL)" salida.txt | head -20
+            exit 1
+          fi
+          echo "::warning::Los casos que requieren motores no pueden correr en el runner; se verifican contra los motores locales."
+
+      - name: Subir la salida de la suite
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: salida-suite
+          path: salida.txt
+          retention-days: 30
 
       - name: Sube las capturas del smoke test como artefacto
         if: always()

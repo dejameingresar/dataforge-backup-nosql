@@ -16,7 +16,7 @@ estática que consume la API. No hay `requirements.txt` porque no hay nada que
 | Pieza | Dónde vive | Dependencias |
 | :- | :- | :- |
 | Servidor HTTP | `app.py` | biblioteca estándar |
-| API de respaldos | `app/nucleo/` | drivers de los motores |
+| API de respaldos | `app/adaptadores/` | drivers de los motores |
 | Interfaz | `app/web/` | HTML, CSS y JS sin framework |
 | Pruebas | `app/tests/` | estándar + Playwright |
 

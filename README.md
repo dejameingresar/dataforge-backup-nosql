@@ -16,7 +16,8 @@ No requiere `pip install`: el servidor es `http.server` de la biblioteca estánd
 |---|---|
 | **Aplicación publicada** | https://dataforge-backup-si783.onrender.com |
 | **Repositorio** | https://github.com/dejameingresar/dataforge-backup-nosql |
-| **Artículo** | https://dev.to/dejameingresar/seis-estrategias-de-respaldo-para-bases-de-datos-nosql-y-que-falla-de-verdad-5hce |
+| **Artículo 1** (Patrick Rodriguez Cardenas) | https://dev.to/dejameingresar/seis-estrategias-de-respaldo-para-bases-de-datos-nosql-y-que-falla-de-verdad-5hce |
+| **Artículo 2** (Nicole Rios Cohaila) | https://dev.to/korins707/por-que-no-usamos-ms-sql-server-seis-estrategias-de-respaldo-que-si-se-pueden-verificar-gld |
 | **Video** | _pendiente de publicación_ |
 
 ## 1. Las tres motores y qué se midió
@@ -45,8 +46,8 @@ documentada, está vendida.
 | **Instantánea** | El estado en un instante concreto, sin detener el motor | No protege contra corrupción posterior del archivo; exige almacenamiento transaccional para ser consistente |
 | **Replicación** | Disponibilidad continua: otra copia siempre viva | **No protege contra el borrado**: un `DROP` se replica al instante |
 
-> El detalle exacto de cada estrategia lo declara el núcleo en
-> `app/nucleo/respaldos.py`; la interfaz lo muestra tal cual, sin reescribirlo.
+> El detalle exacto de cada estrategia lo declara el índice en
+> `app/respaldos.py`; la interfaz lo muestra tal cual, sin reescribirlo.
 
 ## 3. Cómo ejecutarlo
 
@@ -211,7 +212,8 @@ CONTRATO.md               la interfaz entre el servidor y el nucleo
 
 ## 8. Nota sobre el núcleo
 
-El servidor no reimplementa la lógica de respaldos: la pide a `app/nucleo/`
-mediante `app/adaptador.py`, que además **vuelve a medir en disco** lo que el
-núcleo afirma y convierte cualquier problema en un error de usuario (400).
-Ese contrato está escrito en [`CONTRATO.md`](CONTRATO.md).
+El servidor no reimplementa la lógica de respaldos: la pide a
+`app/adaptadores/<motor>.py` mediante `app/adaptador.py`, que además **vuelve a
+medir en disco** lo que el adaptador afirma y convierte cualquier problema en un
+error de usuario (400). Ese contrato está escrito en
+[`CONTRATO.md`](CONTRATO.md).
