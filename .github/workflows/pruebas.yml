@@ -31,33 +31,24 @@ jobs:
         run: |
           python3 checks.py app.py app/adaptador.py app/tests/casos.py
 
-      # Antes este paso hacia `set +e` y `exit 0`: la suite no podia poner el
-      # workflow en rojo jamás, aunque el comentario de arriba afirmara lo
-      # contrario. Ahora se separa lo que depende de un motor (el runner de
-      # GitHub Actions no tiene MongoDB, Redis ni Neo4j) de lo que es un fallo
-      # real de codigo. Los casos sin motor se informan y se saltan; cualquier
-      # otro fallo pone el job en rojo.
-      - name: Suite de pruebas (casos que no requieren motores)
+      # Antes este paso hacia `set +e` y `exit 0`: ningun fallo podia poner el
+      # workflow en rojo, aunque el comentario de mas abajo afirmara lo
+      # contrario. clasificar_ci.py separa los dos casos que se mezclaban:
+      #   - los casos que necesitan un motor vivo (MongoDB, Redis, Neo4j) no
+      #     pueden correr en el runner de GitHub Actions: se informan y se
+      #     saltan, porque no son un defecto del codigo;
+      #   - cualquier otro fallo es un defecto real y sale con codigo 1.
+      - name: Suite de pruebas
         run: |
           set -o pipefail
           python3 app/tests/casos.py 2>&1 | tee salida.txt
-          echo "codigo de salida: ${PIPESTATUS[0]}"
+          codigo=${PIPESTATUS[0]}
+          echo "codigo de salida de la suite: $codigo"
 
       - name: Clasificar el resultado
+        if: always()
         run: |
-          set -o pipefail
-          # La suite marca los casos que dependen de motores con un motivo
-          # explicito. Se cuentan para distinguirlos de un fallo vero.
-          SIN_MOTOR=$(grep -cE "motor (no )?(levantado|apagado|ausente|no disponible)|conector ausente|no hay motor" salida.txt || true)
-          FALLOS=$(grep -cE "^(FALLA|FAIL)" salida.txt || true)
-          echo "casos omitidos por motor ausente: $SIN_MOTOR"
-          echo "fallos de codigo: $FALLOS"
-          if [ "$FALLOS" -gt 0 ]; then
-            echo "::error::La suite tiene $FALLOS fallos que no dependen de los motores"
-            grep -E "^(FALLA|FAIL)" salida.txt | head -20
-            exit 1
-          fi
-          echo "::warning::Los casos que requieren motores no pueden correr en el runner; se verifican contra los motores locales."
+          python3 clasificar_ci.py salida.txt
 
       - name: Subir la salida de la suite
         if: always()
