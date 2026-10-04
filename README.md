@@ -166,6 +166,8 @@ descubre este tipo de fallo.
 
 ## 6. Despliegue
 
+**Aplicación en línea:** <https://dataforge-backup-si783.onrender.com>
+
 Configurado en [`render.yaml`](render.yaml), documentado en [`DEPLOY.md`](DEPLOY.md).
 
 - **Sin dependencias externas**: el `buildCommand` no instala nada.
@@ -204,3 +206,10 @@ El servidor no reimplementa la lógica de respaldos: la pide a `app/nucleo/`
 mediante `app/adaptador.py`, que además **vuelve a medir en disco** lo que el
 núcleo afirma y convierte cualquier problema en un error de usuario (400).
 Ese contrato está escrito en [`CONTRATO.md`](CONTRATO.md).
+
+## 7. Artículo del proyecto
+
+**Leer en Dev.to:** <https://dev.to/dejameingresar/seis-estrategias-de-respaldo-para-bases-de-datos-nosql-y-que-falla-de-verdad-5hce>
+
+El artículo documenta las seis estrategias con las cifras medidas y los cinco
+fallos silenciosos que aparecieron al restaurar y contar.
