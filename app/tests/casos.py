@@ -487,14 +487,14 @@ def t25():
     """
     if not motor_vivo("mongodb"):
         try:
-            adaptador.generar("mongodb", "completo")
+            adaptador.generar("mongodb", "mongodb:logico_mongodump")
         except adaptador.ErrorUsuario:
             return  # sin motor, lo correcto es rechazar, no inventar un ok
         raise Falla("se Deveria rechazar el respaldo sin motor, no inventar un ok")
 
     cliente = _siembra_base_nucleo()
     try:
-        resultado = adaptador.generar("mongodb", "completo")
+        resultado = adaptador.generar("mongodb", "mongodb:logico_mongodump")
     finally:
         try:
             cliente.drop_database(BASE_NUCLEO)
@@ -541,7 +541,7 @@ def t27():
         reales = sum(db[n].count_documents({}) for n in db.list_collection_names())
         esperar(reales > 0, "no hay documentos en la base sembrada")
 
-        resultado = adaptador.generar("mongodb", "completo")
+        resultado = adaptador.generar("mongodb", "mongodb:logico_mongodump")
         igual(resultado.get("ok"), True, "el respaldo deberia generarse")
         igual(resultado.get("registros"), reales,
              "los registros del artefacto no coinciden con los de la base")

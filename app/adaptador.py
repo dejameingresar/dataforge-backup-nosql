@@ -137,7 +137,16 @@ def nucleo(modulo):
     mod = sys.modules.get("nucleo." + modulo)
     if mod is None:
         import importlib
-        for nombre in (f"nucleo.{modulo}", modulo):
+        # Tres rutas posibles: el paquete nucleo, el paquete app (donde vive
+        # app/respaldos.py) y un modulo suelto en la raiz.
+        # Antes de los imports sueltos se anade app/ al path: si no,
+        # "respaldos" se resuelve como namespace package vacio (sin __init__.py)
+        # y el modulo aparece importado pero sin contenido.
+        import app as _app
+        _raiz_app = getattr(_app, "__path__", [None])[0]
+        if _raiz_app and _raiz_app not in sys.path:
+            sys.path.insert(0, _raiz_app)
+        for nombre in (f"nucleo.{modulo}", f"app.{modulo}", modulo):
             try:
                 mod = importlib.import_module(nombre)
                 break

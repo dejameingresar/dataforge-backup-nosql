@@ -91,6 +91,24 @@ function pintaMotores(datos) {
   }).join('');
 
   const arriba = claves.filter((k) => motores[k] && motores[k].conectado).length;
+
+  // Si ningun motor responde, los botones no sirven de nada aqui. Se
+  // deshabilitan con el motivo visible, para que quede claro que no es una
+  // falla de la pagina sino que los motores no estan en este servicio.
+  if (arriba === 0) {
+    ['#btn-respaldar', '#btn-restaurar'].forEach((s) => {
+      $(s).disabled = true;
+      $(s).title = 'Los motores no estan en este servicio web: el respaldo se ejecuta en la maquina del laboratorio.';
+    });
+    const sel = $('#motor');
+    if (sel) sel.title = 'Los motores no estan en este servicio web.';
+  } else {
+    ['#btn-respaldar', '#btn-restaurar'].forEach((s) => {
+      $(s).disabled = false;
+      $(s).title = '';
+    });
+  }
+
   const resumen = $('#resumen-motores');
   if (arriba === claves.length) {
     resumen.textContent = `${arriba} de ${claves.length} motores conectados`;
@@ -109,23 +127,28 @@ function pintaEstrategias(datos) {
     cont.innerHTML = '<p class="vacio">El nucleo no declaro estrategias todavia.</p>';
     return;
   }
+  // El id lleva el motor delante (mongodb:logico_mongodump) porque las seis
+  // estrategias viven en tres motores y dos comparten nombre de concepto.
+  const motorDe = (e) => (e.motor || (e.soporta && e.soporta[0]) || '');
   cont.innerHTML = `<table id="tabla-estrategias">
     <thead><tr>
-      <th>Id</th><th>Estrategia</th><th>Que protege</th>
-      <th>Que NO protege</th><th>Motores</th>
+      <th>Motor</th><th>Estrategia</th><th>Que protege</th>
+      <th>Que NO protege</th><th>Requiere parar el motor</th>
     </tr></thead>
     <tbody>${catalogo.map((e) => `<tr data-estrategia="${esc(e.id)}">
-      <td class="id">${esc(e.id)}</td>
+      <td class="id">${esc(NOMBRES[motorDe(e)] || motorDe(e) || 'n/d')}</td>
       <td class="nombre">${esc(e.nombre || e.id)}</td>
       <td>${lista(e.protege)}</td>
       <td class="no">${lista(e.no_protege)}</td>
-      <td>${esc((e.soporta || []).join(', ') || 'n/d')}</td>
+      <td>${e.requiere_parar_servidor ? 'si' : 'no'}</td>
     </tr>`).join('')}</tbody></table>`;
 
   $('#resumen-estrategias').textContent = `${catalogo.length} declaradas`;
   const sel = $('#estrategia');
-  sel.innerHTML = catalogo.map((e) =>
-    `<option value="${esc(e.id)}">${esc(e.nombre || e.id)}</option>`).join('');
+  sel.innerHTML = catalogo.map((e) => {
+    const motor = motorDe(e);
+    return `<option value="${esc(e.id)}">${esc(NOMBRES[motor] || motor || '')} - ${esc(e.nombre || e.id)}</option>`;
+  }).join('');
 }
 
 /* -------------------------------------------------------------- resultado */

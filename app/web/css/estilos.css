@@ -178,3 +178,28 @@ footer { padding: 0 1.5rem 2rem; max-width: 1180px; margin: 0 auto; color: var(-
   color: #6b5844;
 }
 .motor.remoto .nota a { color: #8a6f52; }
+
+/* Explicacion de entrada: que es la app y que se midio. */
+.intro {
+  max-width: 78rem;
+  margin: 0 auto 1.6rem;
+  padding: 1.4rem 1.7rem;
+  background: #141b2d;
+  border: 1px solid #26304a;
+  border-radius: 10px;
+}
+.intro h2 { margin: 0 0 0.8rem; font-size: 1.15rem; }
+.intro p { margin: 0 0 0.7rem; line-height: 1.65; color: #c3ccdf; }
+.intro p:last-child { margin-bottom: 0; }
+.intro .destacado {
+  color: #9fd6a8;
+  border-left: 3px solid #3f7d52;
+  padding-left: 0.9rem;
+}
+.intro .aviso {
+  color: #d6b98c;
+  border-left: 3px solid #b08968;
+  padding-left: 0.9rem;
+}
+.intro a { color: #7fb2e8; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }

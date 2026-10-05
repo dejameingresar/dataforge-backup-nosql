@@ -32,6 +32,34 @@
   </div>
 </header>
 
+<section class="intro">
+  <h2>Qué es esto</h2>
+  <p>
+    DataForge Backup compara <strong>seis estrategias de respaldo</strong> sobre tres
+    motores de bases de datos NoSQL: MongoDB, Redis y Neo4j. Para cada una mide el
+    tamaño del archivo generado, cuánto tarda y su hash SHA-256; después
+    <strong>destruye los datos, restaura el respaldo y cuenta lo que volvió</strong>.
+  </p>
+  <p>
+    Ese último paso es el que importa: varias herramientas terminan con código de
+    salida cero sin haber restaurado nada. Aquí el resultado se verifica
+    contando, no confiando en el código.
+  </p>
+  <p class="destacado">
+    <strong>Las seis restauraron correctamente.</strong> Las cifras medidas de cada
+    corrida están en
+    <a href="https://github.com/dejameingresar/dataforge-backup-nosql/blob/main/indice/indice_respaldos.json"
+       target="_blank" rel="noopener">indice/indice_respaldos.json</a>,
+    con el tamaño, el tiempo y el hash de cada artefacto.
+  </p>
+  <p class="aviso">
+    Los tres motores viven en la máquina del laboratorio, no en este servicio web:
+    un sitio público no puede alojar una base de datos. Por eso el panel 1 los
+    muestra como no disponibles, y los botones de respaldar necesitan ejecutarse
+    en el laboratorio.
+  </p>
+</section>
+
 <p id="estado" class="estado" hidden></p>
 
 <main>
