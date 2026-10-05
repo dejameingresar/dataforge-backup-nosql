@@ -26,4 +26,4 @@ check en `/api/salud`:
 
 ## Video
 
-Pendiente de grabar. El guion está en `guion-video.md` (4 min 30 s, 9 planos).
+Pendiente de grabar y de publicar.
