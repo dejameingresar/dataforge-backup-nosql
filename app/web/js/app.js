@@ -73,15 +73,32 @@ function pintaMotores(datos) {
         ? 'n/d' : milisegundos(m.latencia_ms)],
     ];
     if (m.detalle) filas.push(['Detalle', m.detalle]);
-    return `<article class="motor ${ok ? 'conectado' : 'caido'}" data-motor="${esc(clave)}">
-      <h3>${esc(NOMBRES[clave] || clave)} <span class="punto">${ok ? 'conectado' : 'sin conexion'}</span></h3>
+    // En la nube los motores no están: son procesos que viven en la máquina
+    // donde se midio. Decir "sin conexion" en rojo parece una falla, cuando
+    // lo correcto es que ahi no hay a quien preguntar.
+    const etiqueta = ok ? 'conectado' : 'no disponible en la nube';
+    const clase = ok ? 'conectado' : 'remoto';
+    const nota = ok ? '' : `
+      <p class="nota">Este motor vive en la maquina donde se ejecuta el respaldo,
+      no en el servicio web. Las cifras medidas estan en
+      <a href="indice/indice_respaldos.json">indice/indice_respaldos.json</a>.</p>`;
+    return `<article class="motor ${clase}" data-motor="${esc(clave)}">
+      <h3>${esc(NOMBRES[clave] || clave)} <span class="punto">${etiqueta}</span></h3>
       <dl>${filas.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
-      ${m.error ? `<p class="err">${esc(m.error)}</p>` : ''}
+      ${m.error && ok ? `<p class="err">${esc(m.error)}</p>` : ''}
+      ${nota}
     </article>`;
   }).join('');
 
   const arriba = claves.filter((k) => motores[k] && motores[k].conectado).length;
-  $('#resumen-motores').textContent = `${arriba} de ${claves.length} contestando`;
+  const resumen = $('#resumen-motores');
+  if (arriba === claves.length) {
+    resumen.textContent = `${arriba} de ${claves.length} motores conectados`;
+  } else if (arriba === 0) {
+    resumen.textContent = `${claves.length} motores evaluados; este servicio web no aloja los motores, solo muestra las mediciones del laboratorio`;
+  } else {
+    resumen.textContent = `${arriba} de ${claves.length} motores contestando`;
+  }
 }
 
 /* ------------------------------------------------------------ estrategias */

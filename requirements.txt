@@ -1,0 +1,6 @@
+# Los tres motores de la actividad necesitan su driver para que la aplicacion
+# pueda consultarlos y medir el respaldo. Sin esto, el despliegue arranca pero
+# /api/motores responde "no hay conector para este motor".
+pymongo>=4.6
+redis>=5.0
+neo4j>=5.14
