@@ -18,9 +18,9 @@ No requiere `pip install`: el servidor es `http.server` de la biblioteca estánd
 | **Repositorio** | https://github.com/dejameingresar/dataforge-backup-nosql |
 | **Artículo 1** (Patrick Rodriguez Cardenas) | https://dev.to/dejameingresar/seis-estrategias-de-respaldo-para-bases-de-datos-nosql-y-que-falla-de-verdad-5hce |
 | **Artículo 2** (Nicole Rios Cohaila) | https://dev.to/korins707/por-que-no-usamos-ms-sql-server-seis-estrategias-de-respaldo-que-si-se-pueden-verificar-gld |
-| **Video** | _pendiente de publicación_ |
+| **Video** | https://youtu.be/vp6qN_V_sTE — *DataForge Backup: 6 estrategias reales sobre MongoDB, Redis y Neo4j* (4:59) |
 
-## 1. Las tres motores y qué se midió
+## 1. Los tres motores y qué se midió
 
 | Motor | Versión | Puerto | Herramienta de respaldo |
 | :- | :- | :- | :- |
@@ -32,22 +32,29 @@ Las versiones de esta tabla son las que contesta cada motor; la interfaz las
 consulta en vivo y muestra `n/d` si un motor está apagado. Nunca inventa una
 versión.
 
-## 2. Estrategias de respaldo
+## 2. Las seis estrategias
+
+Son **seis combinaciones motor + técnica**, dos por cada motor. No son seis
+tipos de respaldo genéricos: cada una es una herramienta concreta sobre un
+motor concreto.
 
 La columna **"qué NO protege"** es la más importante: es la que evita la sorpresa
 después del incidente. Una estrategia que no declara limitación alguna no está
 documentada, está vendida.
 
-| Estrategia | Qué protege | Qué NO protege |
-| :- | :- | :- |
-| **Completo** | Todo el contenido de la base, sin excepciones | No protege de una caída del disco que lo contiene; no protege de un borrado accidental posterior |
-| **Incremental** | Solo lo que cambió desde el último respaldo completo | Depende encadenadamente de todos los completos anteriores: si uno falta, la cadena se rompe |
-| **Diferencial** | Los cambios desde el último respaldo de esa misma estrategia | No protege los cambios acumulados desde el completo |
-| **Instantánea** | El estado en un instante concreto, sin detener el motor | No protege contra corrupción posterior del archivo; exige almacenamiento transaccional para ser consistente |
-| **Replicación** | Disponibilidad continua: otra copia siempre viva | **No protege contra el borrado**: un `DROP` se replica al instante |
+| Motor | Estrategia | Qué protege | Qué NO protege | Para el motor |
+| :- | :- | :- | :- | :- |
+| MongoDB | **Respaldo logico con mongodump** | Los documentos y los indices de las colecciones. Al ser un dump logico, ignora el formato fisico: el archivo se puede cargar en cualquier motor de la misma version mayor. | Los usuarios, los roles y los permisos (van aparte, en authSchema), los datos locales de oplog, el estado interno de WiredTiger ni los archivos de configuracion. | no |
+| MongoDB | **Copia en frio de WiredTiger** | El estado completo del almacenamiento: datos, indices internos, punto de control del journal y catalogo de colecciones. | No se puede elegir una base: el archivo es del MOTOR COMPLETO, con todas las bases del dbpath. Por eso no sustituye a mongodump cuando lo que se quiere es respaldar una base concreta. Solo sirve para la misma version y formato de WiredTiger y es opaco. El restore exige un dbpath vacio y el motor apagado, asi que la ventana sin servicio es doble. | **si** |
+| Redis | **Respaldo RDB con BGSAVE** | El estado completo del conjunto de claves en el instante del punto de control, con toda su codificacion interna. | Los comandos ejecutados entre checkpoints, el historial de escrituras, los streams y las claves ya expiradas. Tampoco es legible sin redis-check-rdb. | no |
+| Redis | **Respaldo del AOF con BGREWRITEAOF** | Todas las escrituras aceptadas desde la ultima vez que se reescribio el archivo, en orden y con su secuencia. | Lo que se perdio si el servidor murio antes de vaciar el buffer a disco: el AOF tambien escribe por lotes, asi que su garantia depende de appendfsync. | no |
+| Neo4j | **Dump binario con neo4j-admin** | Todo el contenido del grafo mas los indices internos y el punto de control de transacciones. | No se puede leer ni consultar sin restaurarlo, no se puede cargar en otra version mayor y, en la edicion Community, exige que la base este detenida mientras se hace y mientras se carga. | **si** |
+| Neo4j | **Exportacion a JSON Lines con Cypher** | Nodos, etiquetas, propiedades y relaciones con sus tipos y propiedades, en un formato que se puede revisar a mano. | Los identificadores internos de Neo4j, los indices, las restricciones, los permisos y el historial de transacciones. Reconstruir el grafo cuesta tiempo si es muy grande. | no |
 
 > El detalle exacto de cada estrategia lo declara el índice en
-> `app/respaldos.py`; la interfaz lo muestra tal cual, sin reescribirlo.
+> `app/respaldos.py`, que a su vez lo toma de los adaptadores. La interfaz y
+> este README leen la misma fuente: no hay dos listas que puedan divergir.
+
 
 ## 3. Cómo ejecutarlo
 

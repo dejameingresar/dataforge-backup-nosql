@@ -26,4 +26,17 @@ check en `/api/salud`:
 
 ## Video
 
-Pendiente de grabar y de publicar.
+- https://youtu.be/vp6qN_V_sTE
+
+  "DataForge Backup: 6 estrategias reales sobre MongoDB, Redis y Neo4j"
+  4 minutos 59 segundos · 1920x1080 · publicado el 5 de octubre de 2026
+
+## Estado de la actividad
+
+| Requisito | Estado |
+| :- | :- |
+| Repositorio público | completo |
+| Deploy con automatización | completo (Render + GitHub Actions) |
+| Publicado en nube pública | completo (Render) |
+| Artículo individual por integrante | 2 de 2 |
+| Video público de máximo 5 minutos | 4:59 |
