@@ -21,7 +21,21 @@ import subprocess
 import time
 from typing import Any
 
-import redis
+try:
+    import redis
+except ModuleNotFoundError:  # el catalogo funciona sin el driver
+    class _ErrorRedis(Exception):
+        """Sustituto de redis.ResponseError cuando no hay driver."""
+
+    class _RedisAusente:
+        ResponseError = _ErrorRedis
+
+        @staticmethod
+        def Redis(*args, **kwargs):
+            raise RuntimeError(
+                "conector ausente: falta el paquete redis (pip install redis)")
+
+    redis = _RedisAusente()
 
 from .. import config
 from ..utileria import (

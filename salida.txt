@@ -1,0 +1,77 @@
+  DataForge Backup · suite de pruebas
+  --------------------------------------------------------------
+  [ OK   ] T-01  el indice declara estrategias y cada una trae las claves obligatorias
+  [ OK   ] T-02  ninguna estrategia promete protegerlo todo: 'no_protege' nunca esta vacio
+  [ OK   ] T-03  cada estrategia declara a que motores aplica y son motores validos
+  [ OK   ] T-04  los ids de estrategia son unicos y no tienen espacios
+  [ OK   ] T-05  una estrategia valida se encuentra por id
+  [ OK   ] T-06  el indice de estrategias serializa a JSON sin datos que no se puedan pintar
+  [ OK   ] T-07  un id de estrategia inexistente se rechaza como error de usuario
+  [ OK   ] T-08  un motor desconocido se rechaza antes de tocar cualquier base de datos
+  [ OK   ] T-09  GET /api/salud responde 200 y describes el servicio
+  [ OK   ] T-10  GET /api/motores devuelve los tres motores, no una lista parcial
+  [ OK   ] T-11  el estado de cada motor se consulta de verdad, no se supone
+  [ OK   ] T-12  GET /api/estrategias devuelve el indice completo
+  [ OK   ] T-13  un motor inexistente en la ruta da 400, nunca 500
+  [ OK   ] T-14  una estrategia inexistente en la ruta da 400 con mensaje legible
+  [ OK   ] T-15  una ruta mal formada o de API desconocida da 4xx, no 500
+  [ OK   ] T-16  un cuerpo POST que no es JSON da 400 y no rompe el servidor
+  [FALLA] T-17  MongoDB 7 responde de verdad a la consulta de estado
+    Traceback (most recent call last):
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 563, in main
+        fn()
+        ~~^^
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 304, in t17
+        raise Falla("MongoDB esta apagado: hay que levantarlo para medir de verdad")
+    Falla: MongoDB esta apagado: hay que levantarlo para medir de verdad
+  [FALLA] T-18  Redis 7 responde de verdad a la consulta de estado
+    Traceback (most recent call last):
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 563, in main
+        fn()
+        ~~^^
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 313, in t18
+        raise Falla("Redis esta apagado: hay que levantarlo para medir de verdad")
+    Falla: Redis esta apagado: hay que levantarlo para medir de verdad
+  [FALLA] T-19  Neo4j 5 responde de verdad a la consulta de estado
+    Traceback (most recent call last):
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 563, in main
+        fn()
+        ~~^^
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 322, in t19
+        raise Falla("Neo4j esta apagado: hay que levantarlo para medir de verdad")
+    Falla: Neo4j esta apagado: hay que levantarlo para medir de verdad
+  [ OK   ] T-20  el hash sha256 se recalcula leyendo el archivo, no se copia de un campo
+  [ OK   ] T-21  verificar un artefacto detecta un archivo alterado
+  [ OK   ] T-22  verificar un artefacto inexistente da error de usuario, no una excepcion
+  [FALLA] T-23  el ciclo completo en MongoDB: respaldar, verificar hash y restaurar
+    Traceback (most recent call last):
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 563, in main
+        fn()
+        ~~^^
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 382, in t23
+        import pymongo
+    ModuleNotFoundError: No module named 'pymongo'
+  [FALLA] T-24  restaurar un artefacto alterado NO repone los datos correctos
+    Traceback (most recent call last):
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 563, in main
+        fn()
+        ~~^^
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 444, in t24
+        import pymongo
+    ModuleNotFoundError: No module named 'pymongo'
+  [ OK   ] T-25  el respaldo solo reporta success si se comprobo que el archivo existe
+  [ OK   ] T-26  ninguna cifra mostrada aparece sin haber sido medida
+  [FALLA] T-27  los registros del artefacto coinciden con los que hay en la base viva
+    Traceback (most recent call last):
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 563, in main
+        fn()
+        ~~^^
+      File "C:\Users\KORINS\Documents\GitHub\dataforge-backup-nosql\app\tests\casos.py", line 535, in t27
+        raise Falla("MongoDB esta apagado: hace falta un motor real")
+    Falla: MongoDB esta apagado: hace falta un motor real
+
+  --------------------------------------------------------------
+  Casos: 27 · exitosos: 21 · fallidos: 6 · cobertura: 78%
+  Motores medidos en vivo: ninguno
+  Ciclo completo con datos reales: T-23 (respaldar, verificar, restaurar, contar)
+  --------------------------------------------------------------

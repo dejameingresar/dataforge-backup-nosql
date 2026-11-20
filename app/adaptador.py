@@ -622,8 +622,21 @@ def _intenta(fn, destino, motor, estrategia):
     raise ultimo if ultimo else ErrorUsuario("no se pudo invocar el respaldo")
 
 
+def _nombre_seguro(texto):
+    """Quita los caracteres que Windows no admite en un nombre de archivo.
+
+    Los ids de estrategia llevan ':' (mongodb:logico_mongodump) y ese caracter
+    no se puede usar en una ruta de Windows. En Linux funciona por casualidad;
+    sanearlo hace que el respaldo funcione igual en ambos sistemas.
+    """
+    for prohibido in ':<>"|?*':
+        texto = texto.replace(prohibido, "-")
+    return texto.strip() or "respaldo"
+
+
 def _destino_para(motor, estrategia):
     """Un directorio propio para el artefacto, segun lo declarado en config."""
+    seguro = _nombre_seguro(estrategia)
     try:
         cfg = _config()
         if cfg is None:
@@ -632,13 +645,13 @@ def _destino_para(motor, estrategia):
                 "neo4j": cfg.DIR_NEO4J}.get(motor)
         if base:
             marca = time.strftime("%Y%m%d-%H%M%S")
-            destino = os.path.join(base, f"{estrategia}-{marca}")
+            destino = os.path.join(base, f"{seguro}-{marca}")
             os.makedirs(destino, exist_ok=True)
             return destino
     except Exception:
         pass
     import tempfile
-    return tempfile.mkdtemp(prefix=f"{motor}-{estrategia}-")
+    return tempfile.mkdtemp(prefix=f"{motor}-{seguro}-")
 
 
 def generar(motor, estrategia):

@@ -24,8 +24,21 @@ import subprocess
 import time
 from typing import Any, Iterator
 
-from neo4j import GraphDatabase
-from neo4j.exceptions import Neo4jError, ServiceUnavailable
+try:
+    from neo4j import GraphDatabase
+    from neo4j.exceptions import Neo4jError, ServiceUnavailable
+except ModuleNotFoundError:  # el catalogo funciona sin el driver
+    class Neo4jError(Exception):
+        """Sustituto de neo4j.exceptions.Neo4jError sin driver."""
+
+    class ServiceUnavailable(Exception):
+        """Sustituto de neo4j.exceptions.ServiceUnavailable sin driver."""
+
+    class GraphDatabase:
+        @staticmethod
+        def driver(*args, **kwargs):
+            raise RuntimeError(
+                "conector ausente: falta el paquete neo4j (pip install neo4j)")
 
 from .. import config
 from ..utileria import (

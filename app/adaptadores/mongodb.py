@@ -23,8 +23,19 @@ import subprocess
 import time
 from typing import Any
 
-import pymongo
-from pymongo.errors import PyMongoError
+try:
+    import pymongo
+    from pymongo.errors import PyMongoError
+except ModuleNotFoundError:  # el catalogo y la API funcionan sin el driver
+    pymongo = None
+
+    class PyMongoError(Exception):
+        """Sustituto para que los `except` no revienten sin el driver."""
+
+    class ErrorConector(Exception):
+        pass
+
+    _AUSENTE = "conector ausente: falta el paquete pymongo (pip install pymongo)"
 
 from .. import config
 from ..utileria import (
@@ -113,6 +124,8 @@ ESTRATEGIAS = {
 
 def conectar_mongodb(uri: str = config.MONGO_URI, servidor: str = "principal"):
     """Abre un cliente pymongo y comprueba que el motor responde."""
+    if pymongo is None:
+        raise RuntimeError(_AUSENTE)
     cliente = pymongo.MongoClient(uri, serverSelectionTimeoutMS=config.TIMEOUT_CONEXION_MS)
     cliente.admin.command("ping")  # falla de inmediato si el motor no esta arriba
     return cliente
@@ -208,6 +221,8 @@ def esperar_mongo(uri: str, segundos: float = 60.0) -> bool:
     limite = time.time() + segundos
     while time.time() < limite:
         try:
+            if pymongo is None:
+                raise RuntimeError(_AUSENTE)
             cliente = pymongo.MongoClient(uri, serverSelectionTimeoutMS=800)
             cliente.admin.command("ping")
             return True
